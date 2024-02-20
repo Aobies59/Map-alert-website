@@ -1,5 +1,17 @@
-const mymap = L.map('sample_map', {zoomControl: false}).setView([40.741, -3.884], 15);
+const mymap = L.map('sample_map', {zoomControl: false}).setView([40.5432515, -4.0130074], 15);
 
+mymap.on("moveend", onViewChange);
+
+// change icon for location when map is moved
+function onViewChange() {
+    location_image.src = "assets/location_not_fixed_icon.svg";
+}
+
+// change icon for location when location is fixed
+function altSetView (coords) {
+    setTimeout(() => (location_image.src = "assets/location_icon.svg"), 500);
+    mymap.setView(coords, 15);
+}
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://cloudmade.com">CloudMade</a>',
@@ -7,29 +19,41 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(mymap);
 
 // icon for the marker to the alert
-const location_marker_icon = L.icon({
-    iconUrl: "assets/location_marker.png",
-    iconSize: [48, 64],
-    iconAnchor: [24, 49],
+const alert_marker_icon = L.icon({
+    iconUrl: "assets/alert_marker.png",
+    iconSize: [40, 40],
+    iconAnchor: [20, 35],
     popupAnchor: [0, -60]
 });
 
-var location_marker;
-location_marker
+var distance_container = document.getElementById("distance_to_marker_container");
+var distance_text = document.getElementById("distance_to_marker");
+
+var alert_marker;
 // create a marker by clicking on the map
 mymap.on('click', function(click_event) {
     alerted = false;  // make sure the alert triggers again
-    delete_element(location_marker);
-    location_marker = new L.marker(click_event.latlng, {icon: location_marker_icon, draggable: true, autoPan: true}).addTo(mymap);
-    location_marker.on("dragend", () => {
+    delete_element(alert_marker);
+    alert_marker = new L.marker(click_event.latlng, {icon: alert_marker_icon, draggable: true, autoPan: true}).addTo(mymap);
+    alert_marker.on("dragend", () => {
         alerted = false
-        check_distance_to_marker();
+        update_distance_to_marker();
     });
-    location_marker.on("drag", update_alert_area);
-    location_marker.on("click", () => delete_element(location_marker));
+    alert_marker.on("drag", update_alert_area);
+    alert_marker.on("click", () => {
+        delete_element(alert_marker);
+        delete_element(alert_radius);
+        distance_container.style.visibility = "hidden";
+    });
     update_alert_area();
-    setTimeout(check_distance_to_marker, 100);
+    setTimeout(update_distance_to_marker, 100);
 })
+
+function update_distance_to_marker() {
+    check_distance_to_marker();
+    distance_container.style.visibility = "visible";
+    distance_text.textContent = parseInt(distance_to_marker);
+}
 
 // check if an element is in the DOM, and if it is remove it
 function delete_element(element_to_delete) {
@@ -45,7 +69,7 @@ navigator.geolocation.watchPosition(check_location);
 const user_marker_icon = L.icon({
     iconUrl: "assets/user_marker.png",
     iconSize: [40, 40],
-    iconAnchor: [20, 27],
+    iconAnchor: [20, 35],
     popupAnchor: [0, -60]
 });
 
@@ -54,23 +78,20 @@ var first = true;
 // create user marker in user location and move the map there
 function check_location(position) {
     if (first) {
-    mymap.setView([position.coords.latitude, position.coords.longitude]);
+    altSetView([position.coords.latitude, position.coords.longitude]);
     first = false;
     }
     var user_position = [position.coords.latitude, position.coords.longitude]
     delete_element(user_marker);
     user_marker = new L.marker(user_position, {icon: user_marker_icon}).addTo(mymap);
 
-    check_distance_to_marker();
+    update_distance_to_marker();
 }
 
 var alert_radius;
 function update_alert_area () {
-    if (!location_marker) {
-        return;
-    }
     delete_element(alert_radius);
-    alert_radius = L.circle(location_marker.getLatLng(), {
+    alert_radius = L.circle(alert_marker.getLatLng(), {
         color: "rgba(0, 0, 0, 0)",
         fillColor: '#0fb7ff',
         fillOpacity: 0.2,
@@ -80,14 +101,14 @@ function update_alert_area () {
 
 var distance_to_alert = 500
 var alerted = false;
+var distance_to_marker;
 // check if the user is 100m or less to the marker, if so vibrate the device and alert the user
 function check_distance_to_marker() {
-    var distance_to_marker;
-    if (!user_marker || !location_marker) {
+    if (!user_marker || !alert_marker) {
         // if there is no marker, get a really high distance to avoid triggering the alert
         distance_to_marker = 10000;
     } else {
-        distance_to_marker = user_marker.getLatLng().distanceTo(location_marker.getLatLng());
+        distance_to_marker = user_marker.getLatLng().distanceTo(alert_marker.getLatLng());
     } 
 
     // if the user is close to the marker, trigger the alert and vibrate, then stop
@@ -111,7 +132,7 @@ const settings_button = L.Control.extend({
         // create button
         var btn = L.DomUtil.create("button", "image-button");
         var settings_image = L.DomUtil.create("img", "image-content");
-        settings_image.src = "assets/settings_icon.png";
+        settings_image.src = "assets/settings_icon.svg";
         settings_image.alt = "Settings Button";
         settings_image.style.width = "50px";
         settings_image.style.height = "50px";
@@ -146,6 +167,7 @@ const settings_button = L.Control.extend({
     },
 });
 
+var location_image;
 // settings button to change distance to alert
 const home_button = L.Control.extend({
     // button position
@@ -156,8 +178,8 @@ const home_button = L.Control.extend({
     onAdd: function () {
         // create button
         var btn = L.DomUtil.create("button", "image-button");
-        var location_image = L.DomUtil.create("img", "image-content");
-        location_image.src = "assets/home_icon.png";
+        location_image = L.DomUtil.create("img", "image-content");
+        location_image.src = "assets/location_icon.svg";
         location_image.alt = "Home Button";
         location_image.style.width = "40px";
         location_image.style.height = "40px";
@@ -171,7 +193,7 @@ const home_button = L.Control.extend({
         // when clicked, prompt the user to change the location to marker for alerts
         btn.onclick = function(click_event) {
             click_event.stopPropagation();
-            mymap.setView(user_marker.getLatLng());
+            altSetView(user_marker.getLatLng());
         };
 
         return btn;

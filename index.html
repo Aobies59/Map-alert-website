@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
-  <title>Ejemplo básico de Leaflet</title>
+  <title>Alert Map</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
     integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin="" />
   <link rel='stylesheet' href='style.css'>
@@ -18,8 +18,11 @@
 
 <body>
   <div id="sample_map"></div>
+  <div id="distance_to_marker_container">
+    <img src="assets\alert_marker.png" alt="Distance to alert marker" id="alert_marker_image">
+    <p id="distance_to_marker">10</p>m
+  </div>
   <script src="script.js">
-
   </script>
 </body>
 

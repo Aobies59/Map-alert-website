@@ -6,4 +6,51 @@ body {
   html, body, #sample_map {
     height: 100%;
   }
+
+#distance_to_marker_container {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  z-index: 999;
+  position: absolute;
+}
   
+#alert_marker_image {
+  height: 50%;
+  margin-right: 1dvw;
+  margin-left: 1dvw;
+}
+
+#distance_to_marker_container {
+  visibility: hidden;
+}
+
+@media screen and (min-width: 861px) {
+  #distance_to_marker_container {
+    border: 2px solid black;
+    min-width: 10dvw;
+    padding-right: 1%;
+    height: 10dvh;
+    bottom: 5dvh;
+    right: 3dvw;
+    font-size: 40px;
+  }
+}
+
+@media screen and (max-width: 860px) {
+  #distance_to_marker_container {
+    border: 1px solid black;
+    height: 10dvh;
+    bottom: 3dvh;
+    right: 5dvw;
+    padding-left: 1dvw;
+    padding-right: 2dvw;
+    font-size: 40px;
+  }
+}
+
+.leaflet-control-attribution {
+  visibility: hidden;
+}
