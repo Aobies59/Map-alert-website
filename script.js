@@ -21,9 +21,13 @@ mymap.on('click', function(click_event) {
     alerted = false;  // make sure the alert triggers again
     delete_element(location_marker);
     location_marker = new L.marker(click_event.latlng, {icon: location_marker_icon, draggable: true, autoPan: true}).addTo(mymap);
-    location_marker.on("dragend", check_distance_to_marker);
-    location_marker.on("moveend", check_distance_to_marker);
+    location_marker.on("dragend", () => {
+        alerted = false
+        check_distance_to_marker();
+    });
+    location_marker.on("drag", update_alert_area);
     location_marker.on("click", () => delete_element(location_marker));
+    update_alert_area();
     setTimeout(check_distance_to_marker, 100);
 })
 
@@ -58,14 +62,15 @@ function check_location(position) {
     user_marker = new L.marker(user_position, {icon: user_marker_icon}).addTo(mymap);
 
     check_distance_to_marker();
-
-    update_alert_area();
 }
 
 var alert_radius;
 function update_alert_area () {
+    if (!location_marker) {
+        return;
+    }
     delete_element(alert_radius);
-    alert_radius = L.circle(user_marker.getLatLng(), {
+    alert_radius = L.circle(location_marker.getLatLng(), {
         color: "rgba(0, 0, 0, 0)",
         fillColor: '#0fb7ff',
         fillOpacity: 0.2,
@@ -117,7 +122,8 @@ const settings_button = L.Control.extend({
         );
 
         // when clicked, prompt the user to change the location to marker for alerts
-        btn.onclick = function() {
+        btn.onclick = function(click_event) {
+            click_event.stopPropagation();
             var user_prompt = prompt("Insert custom distance to marker: ");
             if (user_prompt == null) {
                 return;
@@ -161,7 +167,8 @@ const home_button = L.Control.extend({
         );
 
         // when clicked, prompt the user to change the location to marker for alerts
-        btn.onclick = function() {
+        btn.onclick = function(click_event) {
+            click_event.stopPropagation();
             mymap.setView(user_marker.getLatLng());
         };
 
