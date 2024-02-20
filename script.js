@@ -114,6 +114,7 @@ const settings_button = L.Control.extend({
         settings_image.src = "assets/settings_icon.png";
         settings_image.alt = "Settings Button";
         settings_image.style.width = "50px";
+        settings_image.style.height = "50px";
         btn.appendChild(settings_image);
         btn.title = "Options";
         btn.setAttribute(
@@ -155,11 +156,12 @@ const home_button = L.Control.extend({
     onAdd: function () {
         // create button
         var btn = L.DomUtil.create("button", "image-button");
-        var settings_image = L.DomUtil.create("img", "image-content");
-        settings_image.src = "assets/home_icon.png";
-        settings_image.alt = "Home Button";
-        settings_image.style.width = "40px";
-        btn.appendChild(settings_image);
+        var location_image = L.DomUtil.create("img", "image-content");
+        location_image.src = "assets/home_icon.png";
+        location_image.alt = "Home Button";
+        location_image.style.width = "40px";
+        location_image.style.height = "40px";
+        btn.appendChild(location_image);
         btn.title = "Options";
         btn.setAttribute(
             "style",
