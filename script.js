@@ -39,18 +39,26 @@ mymap.on('click', function(click_event) {
         alerted = false
         update_distance_to_marker();
     });
-    alert_marker.on("drag", update_alert_area);
+    alert_marker.on("drag", () => {
+        update_alert_area();
+        update_distance_value();
+        update_distance_display();
+    });
     alert_marker.on("click", () => {
         delete_element(alert_marker);
         delete_element(alert_radius);
         distance_container.style.visibility = "hidden";
     });
     update_alert_area();
-    setTimeout(update_distance_to_marker, 100);
+    update_distance_to_marker();
 })
 
 function update_distance_to_marker() {
     check_distance_to_marker();
+    update_distance_display();
+}
+
+function update_distance_display () {
     if (distance_to_marker == 10000) {
         distance_container.style.visibility = "hidden";
     } else {
@@ -92,6 +100,7 @@ function check_location(position) {
     update_distance_to_marker();
 }
 
+
 var alert_radius;
 function update_alert_area () {
     delete_element(alert_radius);
@@ -108,13 +117,20 @@ var alerted = false;
 var distance_to_marker;
 // check if the user is 100m or less to the marker, if so vibrate the device and alert the user
 function check_distance_to_marker() {
+    update_distance_value();
+    setTimeout(check_alert, 100);
+}
+
+function update_distance_value() {
     if (!user_marker || !alert_marker) {
         // if there is no marker, get a really high distance to avoid triggering the alert
         distance_to_marker = 10000;
     } else {
         distance_to_marker = user_marker.getLatLng().distanceTo(alert_marker.getLatLng());
-    } 
+    }
+}
 
+function check_alert() {
     // if the user is close to the marker, trigger the alert and vibrate, then stop
     if ((distance_to_marker <= distance_to_alert) && !alerted) {
         window.alert("Less than " + distance_to_alert +" meters from marker")
@@ -164,7 +180,7 @@ const settings_button = L.Control.extend({
             } else {
                 distance_to_alert = user_prompt;
                 update_alert_area();
-                setTimeout(check_distance_to_marker, 100);
+                check_distance_to_marker();
             }
         };
 
