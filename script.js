@@ -51,8 +51,12 @@ mymap.on('click', function(click_event) {
 
 function update_distance_to_marker() {
     check_distance_to_marker();
-    distance_container.style.visibility = "visible";
-    distance_text.textContent = parseInt(distance_to_marker);
+    if (distance_to_marker == 10000) {
+        distance_container.style.visibility = "hidden";
+    } else {
+        distance_container.style.visibility = "visible";
+        distance_text.textContent = parseInt(distance_to_marker);
+    }
 }
 
 // check if an element is in the DOM, and if it is remove it
@@ -160,6 +164,7 @@ const settings_button = L.Control.extend({
             } else {
                 distance_to_alert = user_prompt;
                 update_alert_area();
+                setTimeout(check_distance_to_marker, 100);
             }
         };
 
